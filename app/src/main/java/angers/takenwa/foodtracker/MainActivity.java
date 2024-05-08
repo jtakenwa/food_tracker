@@ -287,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     // Ajouter élement à la BD
 
     public void addProductToDatabase(String code_bare, String productName, String grade,String expirationDate, int daysUntilExpiry, double energy, double energyKcal,
@@ -339,7 +338,6 @@ public class MainActivity extends AppCompatActivity {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(123, builder.build()); // L'ID 123 est utilisé pour identifier cette notification, vous pouvez utiliser un autre ID si nécessaire
     }
-
 
     // Vider DB
 
@@ -437,7 +435,6 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify(124, builder.build());
     }
 
-    ////////////////////////
 
 
     //****************** mise à jour nombre de jour avant expiration ******************
@@ -467,6 +464,7 @@ public class MainActivity extends AppCompatActivity {
         db.close();
     }
 
+    //calcul du nombre de jour pour utilisation
     @RequiresApi(api = Build.VERSION_CODES.O)
     public int calculateDaysUntilDate(String dateString) {
         // Convertit la date de chaîne en LocalDate
@@ -478,9 +476,7 @@ public class MainActivity extends AppCompatActivity {
         return (int) ChronoUnit.DAYS.between(currentDate, expirationDate);
     }
 
-
-    ////////////
-
+    // creation du channel pour les notifications
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.notification_channel_name);
