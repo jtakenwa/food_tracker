@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
     //********** Appel API **********
 
     private void fetchAndAddProductToDatabase(String code_bare) {
-         code_bare = "3168930010883"; ////////////////
+         //code_bare = "3168930010883"; ////////////////
         String apiUrl = "https://world.openfoodfacts.net/api/v2/product/" + code_bare + "?fields=product_name,nutriscore_data,grade,allergens_tags,categories_hierarchy,conservation_conditions,nutriments,countries,customer_service,id,preparation,product_quantity,ingredients_text,misc_tags";
         new FetchProductDataTask().execute(apiUrl);
 
