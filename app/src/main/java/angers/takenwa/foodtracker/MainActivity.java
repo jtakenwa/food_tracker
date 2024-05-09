@@ -4,11 +4,14 @@ package angers.takenwa.foodtracker;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -17,23 +20,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.zxing.client.android.Intents;
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 
-import android.app.NotificationManager;
-import android.content.Context;
-import android.os.Build;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
+import com.google.zxing.client.android.Intents;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,15 +39,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import android.database.Cursor;
-
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -112,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+    private View view;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -120,8 +112,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        //creation de channel pour les notification
         createNotificationChannel();
 
+        // verification si la base de donnée existe deja et creation si non
         boolean databaseCreated = AppPreferences.isDatabaseCreated(this);
         if (!databaseCreated) {
             // Créer la base de données
@@ -135,8 +130,14 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "exist", Toast.LENGTH_LONG).show();
         }
 
+        // notification des produit qui expire dan smoins de 5 jours
         checkExpiringProducts();
-        //updateDaysUntilExpiry();
+
+        // mise à jour du nombre de jour
+        updateDaysUntilExpiry();
+
+        // Appel de la méthode pour récupérer les produits de la base de données
+        List<Product> productList = getProductsFromDatabase();
 
 
     }
@@ -161,6 +162,12 @@ public class MainActivity extends AppCompatActivity {
         new FetchProductDataTask().execute(apiUrl);
 
     }
+
+    public void launchProductListActivity(View view) {
+        Intent intent = new Intent(MainActivity.this, Product_list.class);
+        startActivity(intent);
+    }
+
 
     private class FetchProductDataTask extends AsyncTask<String, Void, JSONObject> {
 
@@ -295,31 +302,68 @@ public class MainActivity extends AppCompatActivity {
                                      double sugars, String sugarsUnit, String allergensTags,
                                      String status, String statusVerbose,String imageUri) {
         SQLiteDatabase db = new DB(this).getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("code_bare", code_bare);
-        values.put("product_name", productName);
-        values.put("grade", grade);
-        values.put("expiration_date", expirationDate);
-        values.put("days_until_expiry", daysUntilExpiry);
-        values.put("energy", energy);
-        values.put("energy_kcal", energyKcal);
-        values.put("energy_unit", energyUnit);
-        values.put("fat_100g", fat100g);
-        values.put("fat", fat);
-        values.put("fat_unit", fatUnit);
-        values.put("proteins", proteins);
-        values.put("proteins_unit", proteinsUnit);
-        values.put("salt", salt);
-        values.put("salt_unit", saltUnit);
-        values.put("sugars", sugars);
-        values.put("sugars_unit", sugarsUnit);
-        values.put("allergens_tags", allergensTags);
-        values.put("status", status);
-        values.put("status_verbose", statusVerbose);
-        values.put("image_uri", imageUri); // Enregistre l'URI de l'image
-        db.insert("products", null, values);
-        showExpirationNotification("succed");
+
+        // Vérifie si un produit avec le même code-barres existe déjà dans la base de données
+        Cursor cursor = db.rawQuery("SELECT * FROM products WHERE code_bare=?", new String[]{code_bare});
+        if (cursor != null && cursor.moveToFirst()) {
+            // Le produit existe déjà, donc met à jour ses informations
+            @SuppressLint("Range") int productId = cursor.getInt(cursor.getColumnIndex("id"));
+            ContentValues values = new ContentValues();
+            values.put("product_name", productName);
+            values.put("grade", grade);
+            values.put("expiration_date", expirationDate);
+            values.put("days_until_expiry", daysUntilExpiry);
+            values.put("energy", energy);
+            values.put("energy_kcal", energyKcal);
+            values.put("energy_unit", energyUnit);
+            values.put("fat_100g", fat100g);
+            values.put("fat", fat);
+            values.put("fat_unit", fatUnit);
+            values.put("proteins", proteins);
+            values.put("proteins_unit", proteinsUnit);
+            values.put("salt", salt);
+            values.put("salt_unit", saltUnit);
+            values.put("sugars", sugars);
+            values.put("sugars_unit", sugarsUnit);
+            values.put("allergens_tags", allergensTags);
+            values.put("status", status);
+            values.put("status_verbose", statusVerbose);
+            values.put("image_uri", imageUri);
+
+            db.update("products", values, "id=?", new String[]{String.valueOf(productId)});
+            cursor.close();
+            //Toast.makeText(MainActivity.this, "upload success", Toast.LENGTH_LONG).show();
+        } else {
+            // Le produit n'existe pas, donc l'ajoute à la base de données
+            ContentValues values = new ContentValues();
+            values.put("code_bare", code_bare);
+            values.put("product_name", productName);
+            values.put("grade", grade);
+            values.put("expiration_date", expirationDate);
+            values.put("days_until_expiry", daysUntilExpiry);
+            values.put("energy", energy);
+            values.put("energy_kcal", energyKcal);
+            values.put("energy_unit", energyUnit);
+            values.put("fat_100g", fat100g);
+            values.put("fat", fat);
+            values.put("fat_unit", fatUnit);
+            values.put("proteins", proteins);
+            values.put("proteins_unit", proteinsUnit);
+            values.put("salt", salt);
+            values.put("salt_unit", saltUnit);
+            values.put("sugars", sugars);
+            values.put("sugars_unit", sugarsUnit);
+            values.put("allergens_tags", allergensTags);
+            values.put("status", status);
+            values.put("status_verbose", statusVerbose);
+            values.put("image_uri", imageUri);
+
+            db.insert("products", null, values);
+        }
+
+        //Toast.makeText(MainActivity.this, "add success", Toast.LENGTH_LONG).show();
         //db.close();
+
     }
 
     // afficher notification
@@ -418,6 +462,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // notification pour les produit qui expire dans moins de 5 jours
     @SuppressLint("MissingPermission")
     private void showExpiringProductsNotification5(List<String> expiringProducts) {
         // Créer une notification avec la liste des produits expirant bientôt
@@ -453,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
                 ContentValues values = new ContentValues();
                 values.put("days_until_expiry", daysUntilExpiry);
 
-                Toast.makeText(MainActivity.this, daysUntilExpiry, Toast.LENGTH_LONG).show(); /////////
+                //Toast.makeText(MainActivity.this, daysUntilExpiry, Toast.LENGTH_LONG).show(); /////////
 
                 db.update("products", values, "id=?", new String[]{String.valueOf(productId)});
             } while (cursor.moveToNext());
@@ -489,5 +534,55 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
+
+
+    //// Liste de produit data base
+
+    @SuppressLint("Range")
+    private List<Product> getProductsFromDatabase() {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = new DB(this).getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM products", null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Product product = new Product();
+                product.setCodeBare(cursor.getString(cursor.getColumnIndex("code_bare")));
+                product.setProductName(cursor.getString(cursor.getColumnIndex("product_name")));
+                product.setGrade(cursor.getString(cursor.getColumnIndex("grade")));
+                product.setExpirationDate(cursor.getString(cursor.getColumnIndex("expiration_date")));
+                product.setDaysUntilExpiry(cursor.getInt(cursor.getColumnIndex("days_until_expiry")));
+                product.setEnergy(cursor.getDouble(cursor.getColumnIndex("energy")));
+                product.setEnergyKcal(cursor.getDouble(cursor.getColumnIndex("energy_kcal")));
+                product.setEnergyUnit(cursor.getString(cursor.getColumnIndex("energy_unit")));
+                product.setFat100g(cursor.getDouble(cursor.getColumnIndex("fat_100g")));
+                product.setFat(cursor.getDouble(cursor.getColumnIndex("fat")));
+                product.setFatUnit(cursor.getString(cursor.getColumnIndex("fat_unit")));
+                product.setProteins(cursor.getDouble(cursor.getColumnIndex("proteins")));
+                product.setProteinsUnit(cursor.getString(cursor.getColumnIndex("proteins_unit")));
+                product.setSalt(cursor.getDouble(cursor.getColumnIndex("salt")));
+                product.setSaltUnit(cursor.getString(cursor.getColumnIndex("salt_unit")));
+                product.setSugars(cursor.getDouble(cursor.getColumnIndex("sugars")));
+                product.setSugarsUnit(cursor.getString(cursor.getColumnIndex("sugars_unit")));
+                product.setAllergensTags(cursor.getString(cursor.getColumnIndex("allergens_tags")));
+                product.setStatus(cursor.getString(cursor.getColumnIndex("status")));
+                product.setStatusVerbose(cursor.getString(cursor.getColumnIndex("status_verbose")));
+                product.setImageUri(cursor.getString(cursor.getColumnIndex("image_uri")));
+
+                productList.add(product);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        db.close();
+        return productList;
+    }
+
+
+    /// activiter affichage
+
+    //private void launchProductListActivity(View view) {}
+
+
 
 }
