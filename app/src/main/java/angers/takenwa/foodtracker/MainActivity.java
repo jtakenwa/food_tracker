@@ -3,6 +3,7 @@ package angers.takenwa.foodtracker;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ContentValues;
@@ -17,6 +18,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -39,17 +41,25 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private String expirationDate;
+
+    ////************
+    private DatePickerDialog datePickerDialog;
+    private Button dateButton;
 
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
             result -> {
@@ -72,7 +82,79 @@ public class MainActivity extends AppCompatActivity {
 
 
                     ////////////////////////
+
+
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Entrez la date de péremption (YYYY.MM.JJ)");
+
+// Ajoutez un EditText pour que l'utilisateur puisse saisir la date de péremption
+                    final EditText input = new EditText(this);
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    builder.setView(input);
+
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String enteredDate = input.getText().toString();
+                            if (isValidDate(enteredDate)) {
+                                // La date est valide, poursuivre avec l'ajout du produit à la base de données
+                                expirationDate = enteredDate;
+                                fetchAndAddProductToDatabase(result.getContents());
+                            } else {
+                                // La date n'est pas valide, afficher un message et demander à l'utilisateur de réessayer
+                                Toast.makeText(getApplicationContext(), "Date invalide. Veuillez entrer une date valide (YYYY.MM.JJ) et non dépassée", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        private boolean isValidDate(String date) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd", Locale.getDefault());
+                                sdf.setLenient(false);
+                                Date parsedDate = sdf.parse(date);
+
+                                // Vérifier si la date est dans le futur
+                                Date currentDate = new Date();
+                                if (parsedDate.after(currentDate)) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            } catch (ParseException e) {
+                                return false;
+                            }
+                        }
+
+                    });
+
+                    builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+
+                        private boolean isValidDate(String date) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd", Locale.getDefault());
+                                sdf.setLenient(false);
+                                Date parsedDate = sdf.parse(date);
+
+                                // Vérifier si la date est dans le futur
+                                Date currentDate = new Date();
+                                if (parsedDate.after(currentDate)) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            } catch (ParseException e) {
+                                return false;
+                            }
+                        }
+
+                    });
+
+                    builder.show();
+
+
+                    /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Entrez la date de péremption (YYYY.MM.JJ)");
 
                     // Ajoutez un EditText pour que l'utilisateur puisse saisir la date de péremption
@@ -97,9 +179,13 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
-                    builder.show();
+                    builder.show();   */
 
-                    //////////////
+                    //////////////******************************************
+
+
+
+                    ///////////////////////////////////////////
 
                 }
             });
@@ -140,6 +226,9 @@ public class MainActivity extends AppCompatActivity {
         List<Product> productList = getProductsFromDatabase();
 
 
+
+
+
     }
 
 
@@ -158,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
     //********** Appel API **********
 
     private void fetchAndAddProductToDatabase(String code_bare) {
+        code_bare = "4388860171310"; ////////////////
         String apiUrl = "https://world.openfoodfacts.net/api/v2/product/" + code_bare + "?fields=product_name,nutriscore_data,grade,allergens_tags,categories_hierarchy,conservation_conditions,nutriments,countries,customer_service,id,preparation,product_quantity,ingredients_text,misc_tags";
         new FetchProductDataTask().execute(apiUrl);
 
@@ -204,7 +294,10 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject product = jsonObject.getJSONObject("product");
                     String code_bare = jsonObject.getString("code");
                     String productName = product.getString("product_name");
-                    String grade = product.getJSONObject("nutriscore_data").getString("grade");
+
+                    JSONObject nutriscoreData = product.optJSONObject("nutriscore_data");
+                    String grade = nutriscoreData != null ? nutriscoreData.optString("grade") : "";
+
                     JSONObject nutriments = product.getJSONObject("nutriments");
                     double energy = nutriments.optDouble("energy");
                     double energyKcal = nutriments.optDouble("energy-kcal");
@@ -247,11 +340,12 @@ public class MainActivity extends AppCompatActivity {
                 return null; // La longueur du code-barres n'est pas valide
             }
 
-            // Divise le code-barres en groupes de trois caractères
+            // Divise le code-barres en groupes de trois caractères pour les trois premiers groupes et quatre pour le dernier
             String[] groups = new String[4];
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 3; i++) {
                 groups[i] = cleanBarcode.substring(i * 3, (i + 1) * 3);
             }
+            groups[3] = cleanBarcode.substring(9);
 
             // Construit l'URL de l'image en remplaçant les parties de l'URL par les groupes extraits
             String imageUrl = "https://images.openfoodfacts.org/images/products/{group1}/{group2}/{group3}/{group4}/front_fr.4.400.jpg"
@@ -260,10 +354,9 @@ public class MainActivity extends AppCompatActivity {
                     .replace("{group3}", groups[2])
                     .replace("{group4}", groups[3]);
 
-
-
             return imageUrl;
         }
+
 
         //// calculer le temps qui reste avant la peremption
         public int calculateDaysUntilDate(String dateString) {

@@ -36,7 +36,7 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
         holder.nameTextView.setText(product.getProductName());
         holder.dateTextView.setText(product.getExpirationDate());
         Picasso.get().load(product.getImageUri())
-                .error(R.drawable.no_image_icon)
+                .error(R.drawable.food_bank)
                 .into(holder.imageView);
     }
 
