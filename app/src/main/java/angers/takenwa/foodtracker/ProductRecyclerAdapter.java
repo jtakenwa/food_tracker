@@ -21,6 +21,15 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
         this.productList = productList;
     }
 
+    private OnProductClickListener productClickListener;
+
+    ProductRecyclerAdapter(List<Product> productList, OnProductClickListener productClickListener) {
+        this.productList = productList;
+        this.productClickListener = productClickListener;
+    }
+
+
+
 
     @NonNull
     @Override
@@ -38,6 +47,14 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
         Picasso.get().load(product.getImageUri())
                 .error(R.drawable.food_bank)
                 .into(holder.imageView);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                productClickListener.onProductClick(product);
+            }
+        });
+
+
     }
 
 
@@ -45,6 +62,10 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
     public int getItemCount() {
         //return 0;
         return productList.size();
+    }
+
+    public interface OnProductClickListener {
+        void onProductClick(Product product);
     }
 
     class NewsViewHolder
@@ -59,6 +80,7 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
         }
     }
 }
+
 
 
 

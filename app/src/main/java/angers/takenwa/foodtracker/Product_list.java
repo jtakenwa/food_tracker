@@ -2,6 +2,7 @@ package angers.takenwa.foodtracker;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -14,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Product_list extends AppCompatActivity {
+public class Product_list extends AppCompatActivity implements ProductRecyclerAdapter.OnProductClickListener {
     RecyclerView recyclerView;
     private Context mContext; // Déclarez une variable de contexte
     List<Product> productList; // Ne pas appeler getProductsFromDatabase() ici
@@ -34,6 +35,9 @@ public class Product_list extends AppCompatActivity {
         productList = getProductsFromDatabase(); // Appeler getProductsFromDatabase() ici
 
         setupRecyclerView();
+
+        ProductRecyclerAdapter adapter = new ProductRecyclerAdapter(productList, this);
+        recyclerView.setAdapter(adapter);
 
     }
 
@@ -91,4 +95,32 @@ public class Product_list extends AppCompatActivity {
         return productList;
     }
 
+    public void onProductClick(Product product) {
+        Bundle bundle = new Bundle();
+        //bundle.putInt("product_id", product.getId());
+        bundle.putString("product_name", product.getProductName());
+        bundle.putString("product_grade", product.getGrade());
+        bundle.putString("expiration_date", product.getExpirationDate());
+        bundle.putInt("days_until_expiry", product.getDaysUntilExpiry());
+        bundle.putDouble("energy", product.getEnergy());
+        bundle.putDouble("energy_kcal", product.getEnergyKcal());
+        bundle.putString("energy_unit", product.getEnergyUnit());
+        bundle.putDouble("fat_100g", product.getFat100g());
+        bundle.putDouble("fat", product.getFat());
+        bundle.putString("fat_unit", product.getFatUnit());
+        bundle.putDouble("proteins", product.getProteins());
+        bundle.putString("proteins_unit", product.getProteinsUnit());
+        bundle.putDouble("salt", product.getSalt());
+        bundle.putString("salt_unit", product.getSaltUnit());
+        bundle.putDouble("sugars", product.getSugars());
+        bundle.putString("sugars_unit", product.getSugarsUnit());
+        bundle.putString("allergens_tags", product.getAllergensTags());
+        bundle.putString("status", product.getStatus());
+        bundle.putString("status_verbose", product.getStatusVerbose());
+        bundle.putString("image_uri", product.getImageUri());
+
+        Intent intent = new Intent(this, Product_details.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
 }

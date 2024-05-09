@@ -20,6 +20,12 @@
         android:theme="@style/Theme.FoodTracker"
         tools:targetApi="31">
         <activity
+            android:name=".Product_details"
+            android:exported="false" />
+        <activity
+            android:name=".product_details"
+            android:exported="false" />
+        <activity
             android:name=".Product_list"
             android:exported="false" />
         <activity android:name=".AnyOrientationCaptureActivity" />
