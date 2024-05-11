@@ -7,24 +7,29 @@
 
 
     <TextView
+        android:id="@+id/app_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:gravity="center"
-        android:layout_marginTop="5dp"
-        android:textSize="30sp"
         android:fontFamily="sans-serif-smallcaps"
-        android:id="@+id/app_title"
-        tools:ignore="MissingConstraints" />
+        android:gravity="center"
+        android:text="@string/app_name"
+        android:textSize="30sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="160dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/news_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="132dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_title"
         tools:ignore="MissingConstraints" />
+
+    <include layout="@layout/product_card_layout" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

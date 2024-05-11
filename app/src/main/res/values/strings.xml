@@ -2,5 +2,9 @@
     <string name="app_name">food tracker</string>
     <string name="notification_channel_name">Nom du canal de notification</string>
     <string name="notification_channel_description">Description du canal de notification</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="open_nav">Open nav</string>
+    <string name="close_nav">Close nav</string>
 
 </resources>
