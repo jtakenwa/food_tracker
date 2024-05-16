@@ -1,6 +1,8 @@
 package angers.takenwa.foodtracker;
 
 
+import static android.widget.Toast.LENGTH_LONG;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -55,12 +57,12 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity implements ProductRecyclerAdapter.OnProductClickListener {
+public class MainActivity extends AppCompatActivity implements GroceriesRecyclerAdapter.OnProductClickListener {
 
     private String expirationDate;
     RecyclerView recyclerView;
 
-    ProductRecyclerAdapter adapter;
+    GroceriesRecyclerAdapter adapter;
 
     List<Product> productList; // Ne pas appeler getProductsFromDatabaseGroceries() ici
 
@@ -74,14 +76,14 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
                     Intent originalIntent = result.getOriginalIntent();
                     if (originalIntent == null) {
                         Log.d("MainActivity", "Cancelled scan");
-                        Toast.makeText(MainActivity.this, "Cancelled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Cancelled", LENGTH_LONG).show();
                     } else if (originalIntent.hasExtra(Intents.Scan.MISSING_CAMERA_PERMISSION)) {
                         Log.d("MainActivity", "Cancelled scan due to missing camera permission");
-                        Toast.makeText(MainActivity.this, "Cancelled due to missing camera permission", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Cancelled due to missing camera permission", LENGTH_LONG).show();
                     }
                 } else {
                     Log.d("MainActivity", "Scanned");
-                    Toast.makeText(MainActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Scanned: " + result.getContents(), LENGTH_LONG).show();
                     //addProductToDatabase(result.getContents());
                     //fetchAndAddProductToDatabase(result.getContents());
 
@@ -106,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
                             if (isValidDate(enteredDate)) {
                                 // La date est valide, poursuivre avec l'ajout du produit à la base de données
                                 expirationDate = enteredDate;
+                                //Toast.makeText(MainActivity.this, expirationDate, Toast.LENGTH_SHORT).show();
                                 fetchAndAddProductToDatabase(result.getContents());
                             } else {
                                 // La date n'est pas valide, afficher un message et demander à l'utilisateur de réessayer
@@ -175,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
 
         setupRecyclerView();
 
-        ProductRecyclerAdapter adapter = new ProductRecyclerAdapter(productList, this);
+        GroceriesRecyclerAdapter adapter = new GroceriesRecyclerAdapter(productList);
         recyclerView.setAdapter(adapter);
 
         //creation de channel pour les notification
@@ -187,12 +190,12 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
             // Créer la base de données
             DB dbHelper = new DB(this);
             dbHelper.getWritableDatabase();
-            Toast.makeText(MainActivity.this, "succes", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "succes", LENGTH_LONG).show();
 
             // Mettre à jour l'indicateur de création de base de données
             AppPreferences.setDatabaseCreated(this, true);
         } else {
-            Toast.makeText(MainActivity.this, "exist", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "exist", LENGTH_LONG).show();
         }
 
         // notification des produit qui expire dan smoins de 5 jours
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
 
     void setupRecyclerView(){
         recyclerView.setLayoutManager (new LinearLayoutManager( this));
-        adapter = new ProductRecyclerAdapter(productList);
+        adapter = new GroceriesRecyclerAdapter(productList);
         recyclerView. setAdapter (adapter);
     }
 
@@ -288,7 +291,9 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
                     String allergensTags = allergensArray.length() > 0 ? allergensArray.getString(0) : "";
                     int status = jsonObject.getInt("status");
                     String statusVerbose = jsonObject.getString("status_verbose");
-                    int daysUntilExpiry = calculateDaysUntilDate(expirationDate);
+                    long daysUntilExpiry = calculateDaysUntilDate(expirationDate);
+
+                    //Toast.makeText(MainActivity.this, String.valueOf(daysUntilExpiry), Toast.LENGTH_SHORT).show();
 
                     String imageUri = buildImageUrl(code_bare);
 
@@ -363,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
 
 
         //// calculer le temps qui reste avant la peremption
-        public int calculateDaysUntilDate(String dateString) {
+        public long calculateDaysUntilDate(String dateString) {
             // Diviser la chaîne de caractères en année, mois et jour
             String[] parts = dateString.split("\\.");
             int year = Integer.parseInt(parts[0]);
@@ -374,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
             LocalDate currentDate = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 currentDate = LocalDate.now();
+                //Toast.makeText(MainActivity.this, String.valueOf(currentDate), Toast.LENGTH_SHORT).show();
             }
 
             // Calculer le nombre de jours restants avant la date spécifiée
@@ -381,10 +387,20 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 specifiedDate = LocalDate.of(year, month, day);
             }
-            int daysUntilDate = 0;
+
+            long daysUntilDate = 0;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                daysUntilDate = (int) currentDate.until(specifiedDate).getDays();
+                daysUntilDate = ChronoUnit.DAYS.between(currentDate, specifiedDate);
             }
+            long monthsUntilDate = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                monthsUntilDate = ChronoUnit.MONTHS.between(currentDate, specifiedDate);
+            }
+            long yearsUntilDate = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                yearsUntilDate = ChronoUnit.YEARS.between(currentDate, specifiedDate);
+            }
+            Toast.makeText(MainActivity.this, String.valueOf(daysUntilDate), Toast.LENGTH_SHORT).show();
 
             return daysUntilDate;
         }
@@ -393,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
 
     // Ajouter élement à la BD
 
-    public void addProductToDatabase(String code_bare, String productName, String grade,String expirationDate, int daysUntilExpiry, double energy, double energyKcal,
+    public void addProductToDatabase(String code_bare, String productName, String grade,String expirationDate, long daysUntilExpiry, double energy, double energyKcal,
                                      String energyUnit, double fat100g, double fat, String fatUnit,
                                      double proteins, String proteinsUnit, double salt, String saltUnit,
                                      double sugars, String sugarsUnit, String allergensTags,
@@ -695,20 +711,30 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
     }
 
     //calcul du nombre de jour pour utilisation
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public int calculateDaysUntilDate(String dateString) {
-        if (dateString == null || dateString.isEmpty()) {
-            // Si la chaîne est nulle ou vide, retournez une valeur par défaut
-            return 0; // Ou une autre valeur par défaut appropriée dans votre contexte
+        // Diviser la chaîne de caractères en année, mois et jour
+        String[] parts = dateString.split("\\.");
+        int year = Integer.parseInt(parts[0]);
+        int month = Integer.parseInt(parts[1]);
+        int day = Integer.parseInt(parts[2]);
+
+        // Obtenir la date actuelle
+        LocalDate currentDate = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentDate = LocalDate.now();
         }
 
-        // Convertit la date de chaîne en LocalDate
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-        LocalDate expirationDate = LocalDate.parse(dateString, formatter);
+        // Calculer le nombre de jours restants avant la date spécifiée
+        LocalDate specifiedDate = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            specifiedDate = LocalDate.of(year, month, day);
+        }
+        int daysUntilDate = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            daysUntilDate = (int) currentDate.until(specifiedDate).getDays();
+        }
 
-        // Calcule le nombre de jours restants jusqu'à la date d'expiration
-        LocalDate currentDate = LocalDate.now();
-        return (int) ChronoUnit.DAYS.between(currentDate, expirationDate);
+        return daysUntilDate;
     }
 
 
@@ -775,7 +801,7 @@ public class MainActivity extends AppCompatActivity implements ProductRecyclerAd
         bundle.putString("product_name", product.getProductName());
         bundle.putString("product_grade", product.getGrade());
         bundle.putString("expiration_date", product.getExpirationDate());
-        bundle.putInt("days_until_expiry", product.getDaysUntilExpiry());
+        bundle.putLong("days_until_expiry", product.getDaysUntilExpiry());
         bundle.putDouble("energy", product.getEnergy());
         bundle.putDouble("energy_kcal", product.getEnergyKcal());
         bundle.putString("energy_unit", product.getEnergyUnit());

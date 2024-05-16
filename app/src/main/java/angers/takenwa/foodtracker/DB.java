@@ -1,10 +1,7 @@
 package angers.takenwa.foodtracker;
 
 
-import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -85,28 +82,31 @@ public class DB extends SQLiteOpenHelper {
 
     }
 
-    // Méthode pour copier les données de la table "groceries" vers la table "products"
-    @SuppressLint("Range")
-    public void copyGroceriesToProducts() {
+
+    public boolean deleteProductFromGroceries(String codeBare) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String selectQuery = "SELECT * FROM groceries";
-
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                ContentValues values = new ContentValues();
-                // Copiez chaque colonne de la table "groceries" dans la table "products"
-                values.put("code_bare", cursor.getString(cursor.getColumnIndex("code_bare")));
-                values.put("product_name", cursor.getString(cursor.getColumnIndex("product_name")));
-                // Copiez les autres colonnes de la même manière
-
-                // Insérez les valeurs dans la table "products"
-                db.insert("products", null, values);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+        int rowsDeleted = db.delete("groceries", "code_bare = ?", new String[] {codeBare});
         db.close();
+        if (rowsDeleted > 0) {
+            return true;
+        } else {
+            //Toast.makeText(this, "Aucun élément correspondant à ce code-barres n'a été trouvé dans la table groceries", Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
+
+    public boolean deleteProductFromFridge(String codeBare) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsDeleted = db.delete("products", "code_bare = ?", new String[] {codeBare});
+        db.close();
+        if (rowsDeleted > 0) {
+            return true;
+        } else {
+            //Toast.makeText(this, "Aucun élément correspondant à ce code-barres n'a été trouvé dans la table groceries", Toast.LENGTH_LONG).show();
+            return false;
+        }
+    }
+
 
 }
 

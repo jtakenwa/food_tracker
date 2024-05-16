@@ -37,7 +37,7 @@ public class Product_details extends AppCompatActivity {
             product.setProductName(bundle.getString("product_name"));
             product.setGrade(bundle.getString("product_grade"));
             product.setExpirationDate(bundle.getString("expiration_date"));
-            product.setDaysUntilExpiry(bundle.getInt("days_until_expiry"));
+            product.setDaysUntilExpiry(bundle.getLong("days_until_expiry"));
             product.setEnergy(bundle.getDouble("energy"));
             product.setEnergyKcal(bundle.getDouble("energy_kcal"));
             product.setEnergyUnit(bundle.getString("energy_unit"));

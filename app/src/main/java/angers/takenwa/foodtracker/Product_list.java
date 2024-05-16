@@ -103,7 +103,7 @@ public class Product_list extends AppCompatActivity implements ProductRecyclerAd
         bundle.putString("product_name", product.getProductName());
         bundle.putString("product_grade", product.getGrade());
         bundle.putString("expiration_date", product.getExpirationDate());
-        bundle.putInt("days_until_expiry", product.getDaysUntilExpiry());
+        bundle.putLong("days_until_expiry", product.getDaysUntilExpiry());
         bundle.putDouble("energy", product.getEnergy());
         bundle.putDouble("energy_kcal", product.getEnergyKcal());
         bundle.putString("energy_unit", product.getEnergyUnit());

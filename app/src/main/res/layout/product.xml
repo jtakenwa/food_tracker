@@ -52,11 +52,14 @@
                 android:layout_height="30dp"
                 android:layout_marginStart="200dp"
                 android:layout_marginBottom="0dp"
-                android:contentDescription="Scan Button"
+                android:contentDescription="remove"
                 app:backgroundTint="@color/red"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:ignore="MissingConstraints" />
+
+
+
 
         </LinearLayout>
 
