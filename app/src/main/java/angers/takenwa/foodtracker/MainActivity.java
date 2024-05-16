@@ -57,7 +57,7 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity implements GroceriesRecyclerAdapter.OnProductClickListener {
+public class MainActivity extends AppCompatActivity implements GroceriesRecyclerAdapter.OnProductClickListener1 {
 
     private String expirationDate;
     RecyclerView recyclerView;
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements GroceriesRecycler
 
         setupRecyclerView();
 
-        GroceriesRecyclerAdapter adapter = new GroceriesRecyclerAdapter(productList);
+        GroceriesRecyclerAdapter adapter = new GroceriesRecyclerAdapter(productList,this);
         recyclerView.setAdapter(adapter);
 
         //creation de channel pour les notification
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements GroceriesRecycler
 
     void setupRecyclerView(){
         recyclerView.setLayoutManager (new LinearLayoutManager( this));
-        adapter = new GroceriesRecyclerAdapter(productList);
+        adapter = new GroceriesRecyclerAdapter(productList,this);
         recyclerView. setAdapter (adapter);
     }
 

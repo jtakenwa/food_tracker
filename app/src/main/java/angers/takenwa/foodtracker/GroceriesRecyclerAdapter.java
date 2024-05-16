@@ -17,15 +17,13 @@ import java.util.List;
 public class GroceriesRecyclerAdapter extends RecyclerView.Adapter<GroceriesRecyclerAdapter.NewsViewHolder>{
 
     List<Product> productList;
-    GroceriesRecyclerAdapter(List<Product> productList){
-        this.productList = productList;
-    }
 
-    private ProductRecyclerAdapter.OnProductClickListener productClickListener;
 
-    GroceriesRecyclerAdapter(List<Product> productList, ProductRecyclerAdapter.OnProductClickListener productClickListener) {
+    private OnProductClickListener1 productClickListener1;
+
+    GroceriesRecyclerAdapter(List<Product> productList, GroceriesRecyclerAdapter.OnProductClickListener1 productClickListener) {
         this.productList = productList;
-        this.productClickListener = productClickListener;
+        this.productClickListener1 = (GroceriesRecyclerAdapter.OnProductClickListener1) productClickListener;
     }
 
 
@@ -50,7 +48,7 @@ public class GroceriesRecyclerAdapter extends RecyclerView.Adapter<GroceriesRecy
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                productClickListener.onProductClick(product);
+                productClickListener1.onProductClick(product);
             }
         });
 
@@ -64,7 +62,7 @@ public class GroceriesRecyclerAdapter extends RecyclerView.Adapter<GroceriesRecy
         return productList.size();
     }
 
-    public interface OnProductClickListener {
+    public interface OnProductClickListener1 {
         void onProductClick(Product product);
     }
 
@@ -92,7 +90,7 @@ public class GroceriesRecyclerAdapter extends RecyclerView.Adapter<GroceriesRecy
                         Product productToDelete = productList.get(getAdapterPosition());
                         // supprimer l'élément de la table groceries de la base de donnée
                         DB db = new DB(itemView.getContext());
-                        db.deleteProductFromGroceries(productToDelete.getCodeBare());
+                        db.deleteProductFromFridge(productToDelete.getCodeBare());
                         // supprimer l'élément de la liste
                         productList.remove(getAdapterPosition());
                         // notifier l'adaptateur que l'élément a été supprimé
