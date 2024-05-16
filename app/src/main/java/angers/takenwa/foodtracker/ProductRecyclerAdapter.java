@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -72,11 +73,16 @@ public class ProductRecyclerAdapter extends RecyclerView.Adapter<ProductRecycler
             extends RecyclerView. ViewHolder{
         TextView nameTextView, dateTextView;
         ImageView imageView;
+        FloatingActionButton remove;
+
         public NewsViewHolder (@NonNull View itemView) {
             super (itemView);
             nameTextView = itemView.findViewById(R.id.product_name);//findViewbyId(R.id.article_title);  // @+id/product_name
             dateTextView = itemView.findViewById(R.id.expiration_date); // @+id/expiration_date
             imageView = itemView.findViewById(R.id.product_image); // @+id/product_image
+            remove=itemView.findViewById(R.id.remove);
+            //remove.setOnClickListener((View.OnClickListener) this);
+
         }
     }
 }

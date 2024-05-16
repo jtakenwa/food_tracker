@@ -32,7 +32,7 @@ public class Product_list extends AppCompatActivity implements ProductRecyclerAd
 
         recyclerView = findViewById(R.id.news_recycler_view);
 
-        productList = getProductsFromDatabase(); // Appeler getProductsFromDatabase() ici
+        productList = getProductsFromDatabaseProduct(); // Appeler getProductsFromDatabase() ici
 
         setupRecyclerView();
 
@@ -48,6 +48,8 @@ public class Product_list extends AppCompatActivity implements ProductRecyclerAd
     }
 
 
+
+
     void updateData(List<Product> data){
         productList.clear();
         productList.addAll(data);
@@ -55,7 +57,7 @@ public class Product_list extends AppCompatActivity implements ProductRecyclerAd
     }
 
     @SuppressLint("Range")
-    private List<Product> getProductsFromDatabase() {
+    private List<Product> getProductsFromDatabaseProduct() {
         List<Product> productList = new ArrayList<>();
         SQLiteDatabase db = new DB(mContext).getReadableDatabase();
 
