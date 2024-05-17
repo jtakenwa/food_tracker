@@ -168,9 +168,9 @@
                 <ImageView
                     android:id="@+id/imageView"
                     android:layout_width="233dp"
-                    android:layout_height="185dp"
-                    app:srcCompat="@drawable/fridge2_rbg"
-                    android:layout_gravity="center"/>
+                    android:layout_height="190dp"
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/fridge2_rbg" />
             </LinearLayout>
 
         </RelativeLayout>

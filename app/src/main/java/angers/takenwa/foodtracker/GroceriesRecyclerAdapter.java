@@ -90,7 +90,7 @@ public class GroceriesRecyclerAdapter extends RecyclerView.Adapter<GroceriesRecy
                         Product productToDelete = productList.get(getAdapterPosition());
                         // supprimer l'élément de la table groceries de la base de donnée
                         DB db = new DB(itemView.getContext());
-                        db.deleteProductFromFridge(productToDelete.getCodeBare());
+                        db.deleteProductFromGroceries(productToDelete.getCodeBare());
                         // supprimer l'élément de la liste
                         productList.remove(getAdapterPosition());
                         // notifier l'adaptateur que l'élément a été supprimé
