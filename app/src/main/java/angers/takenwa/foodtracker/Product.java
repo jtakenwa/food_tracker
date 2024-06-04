@@ -5,7 +5,7 @@ public class Product {
     private String productName;
     private String grade;
     private String expirationDate;
-    private int daysUntilExpiry;
+    private long daysUntilExpiry;
     private double energy;
     private double energyKcal;
     private String energyUnit;
@@ -57,11 +57,11 @@ public class Product {
         this.expirationDate = expirationDate;
     }
 
-    public int getDaysUntilExpiry() {
+    public long getDaysUntilExpiry() {
         return daysUntilExpiry;
     }
 
-    public void setDaysUntilExpiry(int daysUntilExpiry) {
+    public void setDaysUntilExpiry(long daysUntilExpiry) {
         this.daysUntilExpiry = daysUntilExpiry;
     }
 
