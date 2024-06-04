@@ -5,8 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomeActivity"
-    android:background="@color/yellow">
+    android:background="@color/green"
+    tools:context=".Home">
 
     <ImageView
         android:id="@+id/imageView2"
@@ -44,16 +44,18 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="135dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="136dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Description: Never waste again !!!"
         android:text="Never waste again !!!"
         android:textColor="@color/white"
-        android:textSize="15dp"
+        android:textSize="15sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:ignore="TextSizeCheck" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -75,92 +77,103 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
                     <include layout="@layout/product_card" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
                     <include layout="@layout/product_card" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
                     <include layout="@layout/product_card" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
+
                     <include layout="@layout/product_card" />
                 </LinearLayout>
 
 
-<!--                <include layout="@layout/product_card" />-->
+                <!--                <include layout="@layout/product_card" />-->
             </LinearLayout>
         </ScrollView>
+
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_width="383dp"
+            android:layout_height="463dp"
+            android:layout_gravity="center">
+
             <LinearLayout
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
                 android:layout_marginLeft="75dp"
                 android:background="@drawable/rounded_bordered"
                 android:elevation="5dp"
-                android:padding="10dp">
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:onClick="launchMainActivity">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Buy Groceries"
                     android:textSize="25dp"
-                    android:textStyle="bold" />
-                <ImageButton
-                    android:id="@+id/imageCart"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"/>
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="143dp"
+                    android:layout_height="140dp"
                     app:srcCompat="@drawable/shopping_cart_removed_bg"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:background="@color/transparent"
-                    android:scaleType="fitCenter"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    />
+                    android:layout_gravity="center"/>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:layout_marginTop="210dp"
                 android:layout_marginLeft="75dp"
+                android:layout_marginTop="210dp"
                 android:background="@drawable/rounded_bordered"
                 android:elevation="5dp"
-                android:padding="10dp">
+                android:gravity="center"
+                android:onClick="launchProductListActivity"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:layout_gravity="center">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Your Groceries"
                     android:textSize="25dp"
-                    android:textStyle="bold" />
-                <ImageButton
-                    android:id="@+id/imageFridge"
-                    app:srcCompat="@drawable/fridge2_rbg"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:background="@color/transparent"
-                    android:scaleType="fitCenter"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:elevation="10dp"/>
+                    android:textStyle="bold"
+                    android:layout_gravity="center"/>
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="233dp"
+                    android:layout_height="190dp"
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/fridge2_rbg" />
             </LinearLayout>
 
         </RelativeLayout>
-
-
 
 
     </LinearLayout>

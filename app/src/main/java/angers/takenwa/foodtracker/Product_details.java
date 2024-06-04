@@ -21,6 +21,7 @@ public class Product_details extends AppCompatActivity {
     private TextView saltTextView;
     private TextView sugarsTextView;
     private TextView expirationDtTextView;
+    private TextView allerg;
     @SuppressLint("MissingInflatedId")
     @Override
 
@@ -36,7 +37,7 @@ public class Product_details extends AppCompatActivity {
             product.setProductName(bundle.getString("product_name"));
             product.setGrade(bundle.getString("product_grade"));
             product.setExpirationDate(bundle.getString("expiration_date"));
-            product.setDaysUntilExpiry(bundle.getInt("days_until_expiry"));
+            product.setDaysUntilExpiry(bundle.getLong("days_until_expiry"));
             product.setEnergy(bundle.getDouble("energy"));
             product.setEnergyKcal(bundle.getDouble("energy_kcal"));
             product.setEnergyUnit(bundle.getString("energy_unit"));
@@ -65,27 +66,20 @@ public class Product_details extends AppCompatActivity {
         saltTextView = findViewById(R.id.salt);
         sugarsTextView = findViewById(R.id.sugars);
         expirationDtTextView = findViewById(R.id.expiration_dt);
+        allerg = findViewById(R.id.allerg);
 
         String productName = getIntent().getStringExtra("product_name");
         String imageUrl = getIntent().getStringExtra("image_uri");
 
-
-        /*String gradeTextView = getIntent().getStringExtra("grade");
-        int jour = getIntent().getIntExtra("energy", 0);
-
-        int energyKcalTextView = getIntent().getIntExtra("energy", 0);
-        int proteinsTextView = getIntent().getIntExtra("image_url", 0);
-        int fat100gTextView = getIntent().getIntExtra("image_uri", 0);*/
-
-
-        gradeTextView.setText(product.getGrade());
+        gradeTextView.setText("grade: "+product.getGrade());
         daysTextView.setText(String.valueOf("expire in: "+product.getDaysUntilExpiry()+" days"));
-        energyKcalTextView.setText(String.valueOf("energy: "+product.getEnergyKcal()+"g/100g"));
-        proteinsTextView.setText(String.valueOf("protein: "+product.getProteins()+"g/100g"));
-        fat100gTextView.setText(String.valueOf("fat:"+product.getFat100g()+"g/100g"));
-        saltTextView.setText(String.valueOf("salt: "+product.getSalt()+"g/100g"));
-        sugarsTextView.setText(String.valueOf("sugar: "+product.getSugars()+"g/100g"));
+        energyKcalTextView.setText(String.valueOf("energy: "+product.getEnergyKcal()+" g/100g"));
+        proteinsTextView.setText(String.valueOf("protein: "+product.getProteins()+" g/100g"));
+        fat100gTextView.setText(String.valueOf("fat: "+product.getFat100g()+" g/100g"));
+        saltTextView.setText(String.valueOf("salt: "+product.getSalt()+" g/100g"));
+        sugarsTextView.setText(String.valueOf("sugar: "+product.getSugars()+" g/100g"));
         expirationDtTextView.setText("expire on:"+product.getExpirationDate());
+        allerg.setText("Allergen : "+product.getAllergensTags());
 
 
 

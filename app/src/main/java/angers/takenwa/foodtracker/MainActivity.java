@@ -1,6 +1,8 @@
 package angers.takenwa.foodtracker;
 
 
+import static android.widget.Toast.LENGTH_LONG;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -27,6 +29,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.zxing.client.android.Intents;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -53,9 +57,14 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GroceriesRecyclerAdapter.OnProductClickListener1 {
 
     private String expirationDate;
+    RecyclerView recyclerView;
+
+    GroceriesRecyclerAdapter adapter;
+
+    List<Product> productList; // Ne pas appeler getProductsFromDatabaseGroceries() ici
 
     ////************
     private DatePickerDialog datePickerDialog;
@@ -67,14 +76,14 @@ public class MainActivity extends AppCompatActivity {
                     Intent originalIntent = result.getOriginalIntent();
                     if (originalIntent == null) {
                         Log.d("MainActivity", "Cancelled scan");
-                        Toast.makeText(MainActivity.this, "Cancelled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Cancelled", LENGTH_LONG).show();
                     } else if (originalIntent.hasExtra(Intents.Scan.MISSING_CAMERA_PERMISSION)) {
                         Log.d("MainActivity", "Cancelled scan due to missing camera permission");
-                        Toast.makeText(MainActivity.this, "Cancelled due to missing camera permission", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Cancelled due to missing camera permission", LENGTH_LONG).show();
                     }
                 } else {
                     Log.d("MainActivity", "Scanned");
-                    Toast.makeText(MainActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Scanned: " + result.getContents(), LENGTH_LONG).show();
                     //addProductToDatabase(result.getContents());
                     //fetchAndAddProductToDatabase(result.getContents());
 
@@ -99,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                             if (isValidDate(enteredDate)) {
                                 // La date est valide, poursuivre avec l'ajout du produit à la base de données
                                 expirationDate = enteredDate;
+                                //Toast.makeText(MainActivity.this, expirationDate, Toast.LENGTH_SHORT).show();
                                 fetchAndAddProductToDatabase(result.getContents());
                             } else {
                                 // La date n'est pas valide, afficher un message et demander à l'utilisateur de réessayer
@@ -152,41 +162,6 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     builder.show();
-
-
-                    /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Entrez la date de péremption (YYYY.MM.JJ)");
-
-                    // Ajoutez un EditText pour que l'utilisateur puisse saisir la date de péremption
-                    final EditText input = new EditText(this);
-                    input.setInputType(InputType.TYPE_CLASS_TEXT);
-                    builder.setView(input);
-
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            expirationDate = input.getText().toString();
-                            fetchAndAddProductToDatabase(result.getContents());/////////
-
-
-                        }
-                    });
-
-                    builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    });
-
-                    builder.show();   */
-
-                    //////////////******************************************
-
-
-
-                    ///////////////////////////////////////////
-
                 }
             });
     private View view;
@@ -197,7 +172,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Appel de la méthode pour récupérer les produits de la base de données
+        List<Product> productList = getProductsFromDatabaseGroceries();
+        recyclerView = findViewById(R.id.news_recycler_view2);
 
+        setupRecyclerView();
+
+        GroceriesRecyclerAdapter adapter = new GroceriesRecyclerAdapter(productList,this);
+        recyclerView.setAdapter(adapter);
 
         //creation de channel pour les notification
         createNotificationChannel();
@@ -208,12 +190,12 @@ public class MainActivity extends AppCompatActivity {
             // Créer la base de données
             DB dbHelper = new DB(this);
             dbHelper.getWritableDatabase();
-            Toast.makeText(MainActivity.this, "succes", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "succes", LENGTH_LONG).show();
 
             // Mettre à jour l'indicateur de création de base de données
             AppPreferences.setDatabaseCreated(this, true);
         } else {
-            Toast.makeText(MainActivity.this, "exist", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "exist", LENGTH_LONG).show();
         }
 
         // notification des produit qui expire dan smoins de 5 jours
@@ -221,14 +203,12 @@ public class MainActivity extends AppCompatActivity {
 
         // mise à jour du nombre de jour
         updateDaysUntilExpiry();
+    }
 
-        // Appel de la méthode pour récupérer les produits de la base de données
-        List<Product> productList = getProductsFromDatabase();
-
-
-
-
-
+    void setupRecyclerView(){
+        recyclerView.setLayoutManager (new LinearLayoutManager( this));
+        adapter = new GroceriesRecyclerAdapter(productList,this);
+        recyclerView. setAdapter (adapter);
     }
 
 
@@ -253,10 +233,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void launchProductListActivity(View view) {
-        Intent intent = new Intent(MainActivity.this, Product_list.class);
-        startActivity(intent);
-    }
 
 
     private class FetchProductDataTask extends AsyncTask<String, Void, JSONObject> {
@@ -315,11 +291,44 @@ public class MainActivity extends AppCompatActivity {
                     String allergensTags = allergensArray.length() > 0 ? allergensArray.getString(0) : "";
                     int status = jsonObject.getInt("status");
                     String statusVerbose = jsonObject.getString("status_verbose");
-                    int daysUntilExpiry = calculateDaysUntilDate(expirationDate);
+                    long daysUntilExpiry = calculateDaysUntilDate(expirationDate);
+
+                    //Toast.makeText(MainActivity.this, String.valueOf(daysUntilExpiry), Toast.LENGTH_SHORT).show();
 
                     String imageUri = buildImageUrl(code_bare);
 
                     addProductToDatabase(code_bare, productName, grade,expirationDate,daysUntilExpiry, energy, energyKcal, energyUnit, fat100g, fat, fatUnit, proteins, proteinsUnit, salt, saltUnit, sugars, sugarsUnit, allergensTags, String.valueOf(status), statusVerbose,imageUri);
+                    ////
+                    // Ajouter le nouveau produit à la liste productList
+                    Product newProduct = new Product();
+                    newProduct.setCodeBare(code_bare);
+                    newProduct.setProductName(productName);
+                    newProduct.setGrade(grade);
+                    newProduct.setExpirationDate(expirationDate);
+                    newProduct.setDaysUntilExpiry(daysUntilExpiry);
+                    newProduct.setEnergy(energy);
+                    newProduct.setEnergyKcal(energyKcal);
+                    newProduct.setEnergyUnit(energyUnit);
+                    newProduct.setFat100g(fat100g);
+                    newProduct.setFat(fat);
+                    newProduct.setFatUnit(fatUnit);
+                    newProduct.setProteins(proteins);
+                    newProduct.setProteinsUnit(proteinsUnit);
+                    newProduct.setSalt(salt);
+                    newProduct.setSaltUnit(saltUnit);
+                    newProduct.setSugars(sugars);
+                    newProduct.setSugarsUnit(sugarsUnit);
+                    newProduct.setAllergensTags(allergensTags);
+                    newProduct.setStatus(String.valueOf(status));
+                    newProduct.setStatusVerbose(statusVerbose);
+                    newProduct.setImageUri(imageUri);
+
+
+                    productList = getProductsFromDatabaseGroceries();
+                    adapter.notifyDataSetChanged();
+                    setupRecyclerView();
+
+                    ////
                 } catch (JSONException e) {
                     Log.e("FetchProductDataTask", "Error parsing JSON", e);
                 }
@@ -359,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //// calculer le temps qui reste avant la peremption
-        public int calculateDaysUntilDate(String dateString) {
+        public long calculateDaysUntilDate(String dateString) {
             // Diviser la chaîne de caractères en année, mois et jour
             String[] parts = dateString.split("\\.");
             int year = Integer.parseInt(parts[0]);
@@ -370,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
             LocalDate currentDate = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 currentDate = LocalDate.now();
+                //Toast.makeText(MainActivity.this, String.valueOf(currentDate), Toast.LENGTH_SHORT).show();
             }
 
             // Calculer le nombre de jours restants avant la date spécifiée
@@ -377,10 +387,20 @@ public class MainActivity extends AppCompatActivity {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 specifiedDate = LocalDate.of(year, month, day);
             }
-            int daysUntilDate = 0;
+
+            long daysUntilDate = 0;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                daysUntilDate = (int) currentDate.until(specifiedDate).getDays();
+                daysUntilDate = ChronoUnit.DAYS.between(currentDate, specifiedDate);
             }
+            long monthsUntilDate = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                monthsUntilDate = ChronoUnit.MONTHS.between(currentDate, specifiedDate);
+            }
+            long yearsUntilDate = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                yearsUntilDate = ChronoUnit.YEARS.between(currentDate, specifiedDate);
+            }
+            Toast.makeText(MainActivity.this, String.valueOf(daysUntilDate), Toast.LENGTH_SHORT).show();
 
             return daysUntilDate;
         }
@@ -389,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Ajouter élement à la BD
 
-    public void addProductToDatabase(String code_bare, String productName, String grade,String expirationDate, int daysUntilExpiry, double energy, double energyKcal,
+    public void addProductToDatabase(String code_bare, String productName, String grade,String expirationDate, long daysUntilExpiry, double energy, double energyKcal,
                                      String energyUnit, double fat100g, double fat, String fatUnit,
                                      double proteins, String proteinsUnit, double salt, String saltUnit,
                                      double sugars, String sugarsUnit, String allergensTags,
@@ -397,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
         SQLiteDatabase db = new DB(this).getWritableDatabase();
 
         // Vérifie si un produit avec le même code-barres existe déjà dans la base de données
-        Cursor cursor = db.rawQuery("SELECT * FROM products WHERE code_bare=?", new String[]{code_bare});
+        Cursor cursor = db.rawQuery("SELECT * FROM groceries WHERE code_bare=?", new String[]{code_bare});
         if (cursor != null && cursor.moveToFirst()) {
             // Le produit existe déjà, donc met à jour ses informations
             @SuppressLint("Range") int productId = cursor.getInt(cursor.getColumnIndex("id"));
@@ -423,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
             values.put("status_verbose", statusVerbose);
             values.put("image_uri", imageUri);
 
-            db.update("products", values, "id=?", new String[]{String.valueOf(productId)});
+            db.update("groceries", values, "id=?", new String[]{String.valueOf(productId)});
             cursor.close();
             //Toast.makeText(MainActivity.this, "upload success", Toast.LENGTH_LONG).show();
         } else {
@@ -451,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
             values.put("status_verbose", statusVerbose);
             values.put("image_uri", imageUri);
 
-            db.insert("products", null, values);
+            db.insert("groceries", null, values);
         }
 
         //Toast.makeText(MainActivity.this, "add success", Toast.LENGTH_LONG).show();
@@ -482,6 +502,37 @@ public class MainActivity extends AppCompatActivity {
 
         SQLiteDatabase db = new DB(this).getWritableDatabase();
 
+        db.delete("groceries", null, null);
+        db.close();
+        productList = getProductsFromDatabaseGroceries();
+        adapter.notifyDataSetChanged();
+        setupRecyclerView();
+    }
+
+
+
+
+
+    public void supprimerProduitGroceriesCodeBarre(String codeBarre) {
+        // Obtenez une référence à la base de données en mode écriture
+        SQLiteDatabase db = new DB(this).getWritableDatabase();
+
+        // Supprimez la ligne correspondant au code-barres spécifié de la table "groceries"
+        db.delete("groceries", "code_bare = ?", new String[]{codeBarre});
+
+        // Fermez la connexion à la base de données
+        db.close();
+
+        // Rafraîchissez votre RecyclerView après la suppression du produit
+        productList.clear(); // Effacez la liste de produits existante
+        adapter.notifyDataSetChanged(); // Notifiez l'adaptateur des modifications apportées aux données
+        setupRecyclerView(); // Configurez à nouveau le RecyclerView
+    }
+
+    public void viderBaseDeDonneesGroceries(View view) {
+
+        SQLiteDatabase db = new DB(this).getWritableDatabase();
+
         // Récupérer les noms de toutes les tables de la base de données
         Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
         List<String> tables = new ArrayList<>();
@@ -497,7 +548,64 @@ public class MainActivity extends AppCompatActivity {
         for (String table : tables) {
             db.delete(table, null, null);
         }
+        db.close();
+        productList = getProductsFromDatabaseGroceries();
+        adapter.notifyDataSetChanged();
+        setupRecyclerView();
+    }
 
+
+    @SuppressLint("Range")
+    public void copyGroceriesToProducts(View view) {
+
+        SQLiteDatabase db = new DB(this).getWritableDatabase();
+        String selectQuery = "SELECT * FROM groceries";
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                String codeBare = cursor.getString(cursor.getColumnIndex("code_bare"));
+                String expirationDate = cursor.getString(cursor.getColumnIndex("expiration_date"));
+
+                // Vérifier si le code-barres existe déjà dans la table "products"
+                Cursor productCursor = db.rawQuery("SELECT * FROM products WHERE code_bare = ?", new String[]{codeBare});
+                if (productCursor.moveToFirst()) {
+                    // Le code-barres existe déjà, mettre à jour la date de péremption
+                    ContentValues updateValues = new ContentValues();
+                    updateValues.put("expiration_date", expirationDate);
+                    updateValues.put("days_until_expiry", cursor.getInt(cursor.getColumnIndex("days_until_expiry")));
+                    db.update("products", updateValues, "code_bare = ?", new String[]{codeBare});
+                } else {
+                    // Le code-barres n'existe pas encore, ajouter une nouvelle entrée dans la table "products"
+                    ContentValues insertValues = new ContentValues();
+                    insertValues.put("code_bare", codeBare);
+                    insertValues.put("product_name", cursor.getString(cursor.getColumnIndex("product_name")));
+                    insertValues.put("grade", cursor.getString(cursor.getColumnIndex("grade")));
+                    insertValues.put("expiration_date", expirationDate);
+                    insertValues.put("days_until_expiry", cursor.getInt(cursor.getColumnIndex("days_until_expiry")));
+                    insertValues.put("energy", cursor.getDouble(cursor.getColumnIndex("energy")));
+                    insertValues.put("energy_kcal", cursor.getDouble(cursor.getColumnIndex("energy_kcal")));
+                    insertValues.put("energy_unit", cursor.getString(cursor.getColumnIndex("energy_unit")));
+                    insertValues.put("fat_100g", cursor.getDouble(cursor.getColumnIndex("fat_100g")));
+                    insertValues.put("fat", cursor.getDouble(cursor.getColumnIndex("fat")));
+                    insertValues.put("fat_unit", cursor.getString(cursor.getColumnIndex("fat_unit")));
+                    insertValues.put("proteins", cursor.getDouble(cursor.getColumnIndex("proteins")));
+                    insertValues.put("proteins_unit", cursor.getString(cursor.getColumnIndex("proteins_unit")));
+                    insertValues.put("salt", cursor.getDouble(cursor.getColumnIndex("salt")));
+                    insertValues.put("salt_unit", cursor.getString(cursor.getColumnIndex("salt_unit")));
+                    insertValues.put("sugars", cursor.getDouble(cursor.getColumnIndex("sugars")));
+                    insertValues.put("sugars_unit", cursor.getString(cursor.getColumnIndex("sugars_unit")));
+                    insertValues.put("allergens_tags", cursor.getString(cursor.getColumnIndex("allergens_tags")));
+                    insertValues.put("status", cursor.getString(cursor.getColumnIndex("status")));
+                    insertValues.put("status_verbose", cursor.getString(cursor.getColumnIndex("status_verbose")));
+                    insertValues.put("image_uri", cursor.getString(cursor.getColumnIndex("image_uri")));
+
+                    db.insert("products", null, insertValues);
+                }
+                productCursor.close();
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
         db.close();
     }
 
@@ -603,16 +711,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //calcul du nombre de jour pour utilisation
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public int calculateDaysUntilDate(String dateString) {
-        // Convertit la date de chaîne en LocalDate
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-        LocalDate expirationDate = LocalDate.parse(dateString, formatter);
+        // Diviser la chaîne de caractères en année, mois et jour
+        String[] parts = dateString.split("\\.");
+        int year = Integer.parseInt(parts[0]);
+        int month = Integer.parseInt(parts[1]);
+        int day = Integer.parseInt(parts[2]);
 
-        // Calcule le nombre de jours restants jusqu'à la date d'expiration
-        LocalDate currentDate = LocalDate.now();
-        return (int) ChronoUnit.DAYS.between(currentDate, expirationDate);
+        // Obtenir la date actuelle
+        LocalDate currentDate = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            currentDate = LocalDate.now();
+        }
+
+        // Calculer le nombre de jours restants avant la date spécifiée
+        LocalDate specifiedDate = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            specifiedDate = LocalDate.of(year, month, day);
+        }
+        int daysUntilDate = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            daysUntilDate = (int) currentDate.until(specifiedDate).getDays();
+        }
+
+        return daysUntilDate;
     }
+
 
     // creation du channel pour les notifications
     private void createNotificationChannel() {
@@ -632,11 +756,11 @@ public class MainActivity extends AppCompatActivity {
     //// Liste de produit data base
 
     @SuppressLint("Range")
-    private List<Product> getProductsFromDatabase() {
+    private List<Product> getProductsFromDatabaseGroceries() {
         List<Product> productList = new ArrayList<>();
         SQLiteDatabase db = new DB(this).getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM products", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM groceries", null);
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 Product product = new Product();
@@ -671,6 +795,34 @@ public class MainActivity extends AppCompatActivity {
         return productList;
     }
 
+    public void onProductClick(Product product) {
+        Bundle bundle = new Bundle();
+        //bundle.putInt("product_id", product.getId());
+        bundle.putString("product_name", product.getProductName());
+        bundle.putString("product_grade", product.getGrade());
+        bundle.putString("expiration_date", product.getExpirationDate());
+        bundle.putLong("days_until_expiry", product.getDaysUntilExpiry());
+        bundle.putDouble("energy", product.getEnergy());
+        bundle.putDouble("energy_kcal", product.getEnergyKcal());
+        bundle.putString("energy_unit", product.getEnergyUnit());
+        bundle.putDouble("fat_100g", product.getFat100g());
+        bundle.putDouble("fat", product.getFat());
+        bundle.putString("fat_unit", product.getFatUnit());
+        bundle.putDouble("proteins", product.getProteins());
+        bundle.putString("proteins_unit", product.getProteinsUnit());
+        bundle.putDouble("salt", product.getSalt());
+        bundle.putString("salt_unit", product.getSaltUnit());
+        bundle.putDouble("sugars", product.getSugars());
+        bundle.putString("sugars_unit", product.getSugarsUnit());
+        bundle.putString("allergens_tags", product.getAllergensTags());
+        bundle.putString("status", product.getStatus());
+        bundle.putString("status_verbose", product.getStatusVerbose());
+        bundle.putString("image_uri", product.getImageUri());
+
+        Intent intent = new Intent(this, Product_details.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
 
     /// activiter affichage
 
