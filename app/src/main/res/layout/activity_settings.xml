@@ -104,7 +104,7 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="10dp"
                         android:layout_marginBottom="10dp"
-                        android:src="@drawable/baseline_doorbell_24"
+                        android:src="@drawable/bell_notif"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/textView4"
                         app:layout_constraintStart_toStartOf="parent"
@@ -152,7 +152,7 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="10dp"
                         android:layout_marginBottom="10dp"
-                        android:src="@drawable/baseline_cached_24"
+                        android:src="@drawable/clean"
                         app:layout_constraintEnd_toStartOf="@+id/textView3"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -177,7 +177,8 @@
                         app:srcCompat="@drawable/baseline_delete_24"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"/>
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginRight="10dp"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
 
