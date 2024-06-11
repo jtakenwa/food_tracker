@@ -82,6 +82,11 @@ public class Home extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void launchSettingsActivity(View view) {
+        Intent intent = new Intent(Home.this, Settings.class);
+        startActivity(intent);
+    }
+
     // afficher notification
     @SuppressLint("MissingPermission")
     public void showExpirationNotification(String productName) {//, String expirationDate
