@@ -13,59 +13,78 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="4dp"
-        android:gravity="center_vertical">
+        android:background="@drawable/rounded_bordered">
 
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:scaleType="centerCrop"
+            android:src="@drawable/burger"
             android:id="@+id/product_image"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_weight="1">
 
             <TextView
                 android:id="@+id/product_name"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="4dp"
-                android:maxLines="3"
+                android:layout_marginBottom="10dp"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 tools:text="Product Name" />
+
+            <TextView
+                android:id="@+id/bought_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:textSize="15sp"
+                tools:text="bought_date"
+                android:textColor="@color/green"/>
 
             <TextView
                 android:id="@+id/expiration_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:textSize="12sp"
-                tools:text="expiration_date" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/remove"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="200dp"
-                android:layout_marginBottom="0dp"
-                android:contentDescription="remove"
-                app:backgroundTint="@color/red"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                tools:ignore="MissingConstraints" />
-
-
-
-
+                android:textSize="15sp"
+                tools:text="expiration_date"
+                android:textColor="@color/red"/>
 
         </LinearLayout>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp">
+            <ImageView
+                android:id="@+id/remove"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/baseline_delete_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <!--            <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--                android:id="@+id/remove"-->
+<!--                android:layout_width="30dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:layout_marginStart="200dp"-->
+<!--                android:layout_marginBottom="0dp"-->
+<!--                android:contentDescription="remove"-->
+<!--                app:backgroundTint="@color/red"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                tools:ignore="MissingConstraints" />-->
+
 
     </LinearLayout>
-
-<!--    <include layout="@layout/product_card_layout" />-->
 </androidx.cardview.widget.CardView>
